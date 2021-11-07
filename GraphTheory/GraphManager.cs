@@ -2,8 +2,8 @@
 {
     internal class GraphManager
     {
-        private const string boxesPath = @"C:\Users\BRUT4LxD\OneDrive - Wojskowa Akademia Techniczna\Pulpit\python-projects\github\train-annotations-bbox.csv";
-        private const string namesPath = @"C:\Users\BRUT4LxD\OneDrive - Wojskowa Akademia Techniczna\Pulpit\python-projects\github\class-descriptions-boxable.csv";
+        private const string boxesPath = @"..\..\..\Datasets\train-annotations-bbox.csv";
+        private const string namesPath = @"..\..\..\Datasets\class-descriptions-boxable.csv";
         private readonly IReadOnlyDictionary<string, string> _names;
 
         public IDictionary<string, IDictionary<string, int>> RelationCountMatrix { get; } = new Dictionary<string, IDictionary<string, int>>();
@@ -28,7 +28,7 @@
             return dict;
         }
 
-        internal async Task ProcessImages()
+        internal async Task CalculateRelationCounts()
         {
             Console.WriteLine("PROCESSING IMAGES...");
             using StreamReader fileStream = new(boxesPath);
@@ -82,6 +82,7 @@
                     {
                         RelationCountMatrix[x].Add(y, 0);
                     }
+
                     if (!RelationCountMatrix[y].ContainsKey(x))
                     {
                         RelationCountMatrix[y].Add(x, 0);
@@ -122,6 +123,11 @@
                 Console.WriteLine();
                 Console.WriteLine();
             }
+        }
+
+        internal async Task SaveResults(string path)
+        {
+            await IOMananger.SaveToFile(path, RelationCountMatrix, FileFormat.JSON);
         }
     }
 }

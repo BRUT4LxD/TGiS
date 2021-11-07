@@ -2,6 +2,8 @@
 
 var graphManager = new GraphManager();
 
-await graphManager.ProcessImages();
+await graphManager.CalculateRelationCounts();
 
 graphManager.PrintRelationCountMatrix(5);
+
+await graphManager.SaveResults("relationCounts.json");

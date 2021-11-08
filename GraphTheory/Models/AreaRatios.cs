@@ -6,7 +6,7 @@
     {
         if (!AreaRatiosGraph.ContainsKey(name))
         {
-            AreaRatiosGraph.Add(name, new Area());
+            AreaRatiosGraph.Add(name, new Area(value));
         }
 
         AreaRatiosGraph[name].AddSample((value == 0 ? 1 : value) / currentArea.LastAreaValue);

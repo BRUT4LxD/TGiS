@@ -4,11 +4,11 @@ internal class ClassDescription
 {
     public string Name { get; }
 
-    public ClassDescription(string name)
+    public ClassDescription(SimpleClassDescription simpleClassDescription)
     {
-        Name = name;
-        SizeRatio = new SizeRatio();
-        Area = new Area();
+        Name = simpleClassDescription.Name;
+        SizeRatio = new SizeRatio(simpleClassDescription.SizeRatio);
+        Area = new Area(simpleClassDescription.Area);
         RelationCounts = new RelationCounts();
         AreaRatios = new AreaRatios();
     }
@@ -23,8 +23,11 @@ internal class ClassDescription
 
     public void AddSample(SimpleClassDescription simpleClassDescription)
     {
-        Area.AddSample(simpleClassDescription.Area);
-        SizeRatio.AddSample(simpleClassDescription.SizeRatio);
+        if (simpleClassDescription.Name == Name)
+        {
+            Area.AddSample(simpleClassDescription.Area);
+            SizeRatio.AddSample(simpleClassDescription.SizeRatio);
+        }
         RelationCounts.AddRelation(simpleClassDescription.Name);
         AreaRatios.AddSample(Area, simpleClassDescription.Name, simpleClassDescription.Area);
     }

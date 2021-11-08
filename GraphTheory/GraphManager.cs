@@ -69,7 +69,7 @@
 
                 if (!ClassDescriptions.ContainsKey(c1.Name))
                 {
-                    ClassDescriptions.Add(c1.Name, new ClassDescription(c1.Name));
+                    ClassDescriptions.Add(c1.Name, new ClassDescription(c1));
                 }
 
                 var c1Description = ClassDescriptions[c1.Name];
@@ -80,7 +80,7 @@
 
                     if (!ClassDescriptions.ContainsKey(c2.Name))
                     {
-                        ClassDescriptions.Add(c2.Name, new ClassDescription(c2.Name));
+                        ClassDescriptions.Add(c2.Name, new ClassDescription(c2));
                     }
 
                     c1Description.AddSample(c2);
@@ -90,31 +90,6 @@
                         ClassDescriptions[c2.Name].AddSample(c1);
                     }
                 }
-            }
-        }
-
-        internal void PrintRelationCountMatrix(int top = -1)
-        {
-            top = top == -1 ? ClassDescriptions.Count : Math.Min(top, ClassDescriptions.Count);
-            foreach (var item in ClassDescriptions)
-            {
-                Console.Write(item.Key + ": ");
-                PriorityQueue<KeyValuePair<string, int>, int> queue = new(top, new NumberComparer(false));
-
-                foreach (var j in item.Value.RelationCounts.RelationCountsGraph)
-                {
-                    queue.Enqueue(new KeyValuePair<string, int>(j.Key, j.Value), j.Value);
-                }
-
-                while (queue.Count != 0)
-                {
-                    var el = queue.Dequeue();
-
-                    Console.Write($"{el.Key}:{el.Value}, ");
-                }
-
-                Console.WriteLine();
-                Console.WriteLine();
             }
         }
 

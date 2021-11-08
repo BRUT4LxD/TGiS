@@ -1,4 +1,4 @@
-﻿internal interface IMetric
+﻿internal interface IMetric<T>
 {
-    void AddSample(double value);
+    void AddSample(T value);
 }

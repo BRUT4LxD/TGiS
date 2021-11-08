@@ -1,6 +1,6 @@
-﻿internal interface ISimpleMetric : IMetric
+﻿internal interface ISimpleMetric<T> : IMetric<T>
 {
-    double MeanRatio { get; set; }
+    double Mean { get; set; }
     int NoSamples { get; set; }
     double StandardDeviation { get; set; }
 }

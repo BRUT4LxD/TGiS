@@ -1,6 +1,6 @@
-﻿internal class Area : ISimpleMetric
+﻿internal class Area : ISimpleMetric<double>
 {
-    public double MeanRatio { get; set; }
+    public double Mean { get; set; }
 
     public double StandardDeviation { get; set; }
 
@@ -10,8 +10,8 @@
 
     public void AddSample(double value)
     {
-        StandardDeviation = Calculator.AddToStandardDeviation(StandardDeviation, MeanRatio, NoSamples, value);
-        MeanRatio = Calculator.AddToMean(MeanRatio, NoSamples, value);
+        StandardDeviation = Calculator.AddToStandardDeviation(StandardDeviation, Mean, NoSamples, value);
+        Mean = Calculator.AddToMean(Mean, NoSamples, value);
         NoSamples++;
         LastAreaValue = value;
     }

@@ -6,7 +6,7 @@
         private const string namesPath = @"..\..\..\Datasets\class-descriptions-boxable.csv";
         private readonly IReadOnlyDictionary<string, string> _names;
 
-        public IDictionary<string, IDictionary<string, int>> RelationCountMatrix { get; } = new Dictionary<string, IDictionary<string, int>>();
+        public IDictionary<string, ClassDescription> ClassDescriptions { get; } = new Dictionary<string, ClassDescription>();
 
         public GraphManager()
         {
@@ -28,7 +28,7 @@
             return dict;
         }
 
-        internal async Task CalculateRelationCounts()
+        internal async Task CalculateClassDescriptions()
         {
             Console.WriteLine("PROCESSING IMAGES...");
             using StreamReader fileStream = new(boxesPath);
@@ -61,54 +61,47 @@
 
         private void AddToMatrix(List<BoundingBox> boxes)
         {
-            for (int i = 0; i < boxes.Count; i++)
+            var simpleClassDescriptions = boxes.Select(e => SimpleClassDescription.Create(e, _names[e.LabelName])).ToList();
+
+            for (int i = 0; i < simpleClassDescriptions.Count; i++)
             {
-                for (int j = i + 1; j < boxes.Count; j++)
+                var c1 = simpleClassDescriptions[i];
+
+                if (!ClassDescriptions.ContainsKey(c1.Name))
                 {
-                    var x = _names[boxes[i].LabelName];
-                    var y = _names[boxes[j].LabelName];
+                    ClassDescriptions.Add(c1.Name, new ClassDescription(c1.Name));
+                }
 
-                    if (!RelationCountMatrix.ContainsKey(x))
+                var c1Description = ClassDescriptions[c1.Name];
+
+                for (int j = i + 1; j < simpleClassDescriptions.Count; j++)
+                {
+                    var c2 = simpleClassDescriptions[j];
+
+                    if (!ClassDescriptions.ContainsKey(c2.Name))
                     {
-                        RelationCountMatrix.Add(x, new Dictionary<string, int>());
+                        ClassDescriptions.Add(c2.Name, new ClassDescription(c2.Name));
                     }
 
-                    if (!RelationCountMatrix.ContainsKey(y))
-                    {
-                        RelationCountMatrix.Add(y, new Dictionary<string, int>());
-                    }
+                    c1Description.AddSample(c2);
 
-                    if (!RelationCountMatrix[x].ContainsKey(y))
+                    if (c1.Name != c2.Name)
                     {
-                        RelationCountMatrix[x].Add(y, 0);
+                        ClassDescriptions[c2.Name].AddSample(c1);
                     }
-
-                    if (!RelationCountMatrix[y].ContainsKey(x))
-                    {
-                        RelationCountMatrix[y].Add(x, 0);
-                    }
-
-                    if (x != y)
-                    {
-                        RelationCountMatrix[x][y]++;
-                        RelationCountMatrix[y][x]++;
-                        continue;
-                    }
-
-                    RelationCountMatrix[x][x]++;
                 }
             }
         }
 
         internal void PrintRelationCountMatrix(int top = -1)
         {
-            top = top == -1 ? RelationCountMatrix.Count : Math.Min(top, RelationCountMatrix.Count);
-            foreach (var item in RelationCountMatrix)
+            top = top == -1 ? ClassDescriptions.Count : Math.Min(top, ClassDescriptions.Count);
+            foreach (var item in ClassDescriptions)
             {
                 Console.Write(item.Key + ": ");
                 PriorityQueue<KeyValuePair<string, int>, int> queue = new(top, new NumberComparer(false));
 
-                foreach (var j in item.Value)
+                foreach (var j in item.Value.RelationCounts.RelationCountsGraph)
                 {
                     queue.Enqueue(new KeyValuePair<string, int>(j.Key, j.Value), j.Value);
                 }
@@ -127,7 +120,7 @@
 
         internal async Task SaveResults(string path)
         {
-            await IOMananger.SaveToFile(path, RelationCountMatrix, FileFormat.JSON);
+            await IOMananger.SaveToFile(path, ClassDescriptions, FileFormat.JSON);
         }
     }
 }

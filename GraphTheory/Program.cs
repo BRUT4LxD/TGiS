@@ -2,8 +2,9 @@
 
 var graphManager = new GraphManager();
 
-await graphManager.CalculateRelationCounts();
+await graphManager.CalculateClassDescriptions();
 
-graphManager.PrintRelationCountMatrix(5);
+//graphManager.PrintRelationCountMatrix(5);
 
-await graphManager.SaveResults("relationCounts.json");
+await graphManager.SaveResults("classDescriptions.json");
+

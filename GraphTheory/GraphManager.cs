@@ -4,7 +4,7 @@
     {
         private const string boxesPath = @"..\..\..\Datasets\train-annotations-bbox.csv";
         private const string namesPath = @"..\..\..\Datasets\class-descriptions-boxable.csv";
-        private readonly IReadOnlyDictionary<string, string> _names;
+        public readonly IReadOnlyDictionary<string, string> _names;
 
         public IDictionary<string, ClassDescription> ClassDescriptions { get; } = new Dictionary<string, ClassDescription>();
 

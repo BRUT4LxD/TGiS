@@ -12,7 +12,7 @@ public class DatasetFactor
     private readonly Random _r = new();
 
     private const int NumClasses = 600;
-    private const int SampleInputs = 10;
+    private const int SampleInputs = 5;
     private const int SampleInputSize = 10;
     private const int TrainSamplesPerPicture = 5;
     private const string BoxesPathEncoded = @"..\..\..\Datasets\train-annotations-bbox_encoded.csv";
@@ -21,6 +21,7 @@ public class DatasetFactor
     private const string NamesAnnotationsEncodedPath = @"..\..\..\Datasets\class-descriptions-boxable_encoded.csv";
     private const string TrainPath = @"..\..\..\Datasets\train.csv";
     private const string TestPath = @"..\..\..\Datasets\test.csv";
+    private const string Coco2017Labels = @"..\..\..\Datasets\coco_labels.csv";
 
     public async Task GenerateEncodedBoxes(IReadOnlyDictionary<string, string> names)
     {
@@ -288,7 +289,7 @@ public class DatasetFactor
 
     }
 
-    public async Task<List<(int, int)>> GetTopNClassesCounts(int n, bool save = false)
+    public async Task<List<(int, int)>> GetTopNClassesCounts(int n, bool save = false, bool fromCoco2017 = false)
     {
         var streamReader = new StreamReader(BoxesPathEncoded);
 
@@ -306,10 +307,29 @@ public class DatasetFactor
 
             dict[id]++;
         }
+
+        var cocoLabels = new List<string>();
+        if (fromCoco2017)
+        {
+            var cocoStreamReader = new StreamReader(Coco2017Labels);
+
+            while (!cocoStreamReader.EndOfStream)
+            {
+                var className = (await cocoStreamReader.ReadLineAsync()).Split(",")[1];
+                cocoLabels.Add(className);
+            }
+
+            var encodedNames = await GetEncodedNames();
+
+            dict = dict
+                .Where(e => cocoLabels.Any(c => encodedNames[e.Key].Contains(c, StringComparison.InvariantCultureIgnoreCase)))
+                .ToDictionary(e => e.Key, e => e.Value);
+        }
+
         var results = dict.Select(e => (e.Key, e.Value)).OrderByDescending(e => e.Value).Take(n).ToList();
         if (save)
         {
-            string topPath = $@"..\..\..\Datasets\top_{n}_classes_counts.csv";
+            string topPath = $@"..\..\..\Datasets\top_{n}_classes_counts{(fromCoco2017 ? "_from_coco" : "")}.csv";
             var sb = new StringBuilder();
             results.ForEach(e => sb.AppendLine(string.Join(",", e.Key, e.Value)));
             await File.WriteAllTextAsync(topPath, sb.ToString());
@@ -317,9 +337,9 @@ public class DatasetFactor
         return results;
     }
 
-    public async Task<List<(int, int)>> LoadTop20ClassesCounts()
+    public async Task<List<(int, int)>> LoadTop20ClassesCounts(bool fromCoco = false)
     {
-        string topPath = $@"..\..\..\Datasets\top_20_classes_counts.csv";
+        string topPath = $@"..\..\..\Datasets\top_20_classes_counts{(fromCoco ? "_from_coco" : "")}.csv";
         var streamReader = new StreamReader(topPath);
 
         var results = new List<(int, int)>();
@@ -362,7 +382,7 @@ public class DatasetFactor
 
     public async Task GetImagesClassesIds(List<int> ids, int top = 50000)
     {
-        string ImagesIdsPath = $@"..\..\..\Datasets\images-ids_{top}.txt";
+        string ImagesIdsPath = $@"..\..\..\Datasets\images_ids_{top}.txt";
         var encodedNames = await GetEncodedNames();
 
         var chosenNames = ids.Select(e => encodedNames[e]);
@@ -644,11 +664,6 @@ public class DatasetFactor
         trainArr[2] = _r.NextDouble();
         trainArr[3] = _r.NextDouble();
         trainArr[4] = _r.NextDouble();
-        trainArr[5] = _r.NextBoolean() ? 1 : 0;
-        trainArr[6] = _r.NextBoolean() ? 1 : 0;
-        trainArr[7] = _r.NextBoolean() ? 1 : 0;
-        trainArr[8] = _r.NextBoolean() ? 1 : 0;
-        trainArr[9] = _r.NextBoolean() ? 1 : 0;
     }
 
     private void AddPositiveSample(double[] trainArr, List<string[]> list, HashSet<int> localTrain)
@@ -660,11 +675,6 @@ public class DatasetFactor
         trainArr[2] = double.Parse(list[predictor][2]);
         trainArr[3] = double.Parse(list[predictor][3]);
         trainArr[4] = double.Parse(list[predictor][4]);
-        trainArr[5] = double.Parse(list[predictor][5]);
-        trainArr[6] = double.Parse(list[predictor][6]);
-        trainArr[7] = double.Parse(list[predictor][7]);
-        trainArr[8] = double.Parse(list[predictor][8]);
-        trainArr[9] = double.Parse(list[predictor][9]);
     }
 
     private HashSet<int> GenerateRandomTrainClasses(List<string[]> list, int sampleInputs, HashSet<int[]> train)

@@ -23,18 +23,20 @@ using Microsoft.VisualBasic;
 
 var df = new DatasetFactor();
 
-var top = await df.LoadTop20ClassesCounts();
+var top = await df.LoadTop20ClassesCounts(fromCoco: true);
+
+
 
 //foreach (var item in top)
 //{
 //    Console.WriteLine(names[item.Item1] + " : " + item.Item2);
 //}
 
-await df.GetTopTrainBoxesSamples(top.Select(e => e.Item1).ToList());
+await df.GetImagesClassesIds(top.Select(e => e.Item1).ToList());
 
-string yoloDir = @"C:\Users\BRUT4LxD\OneDrive - Wojskowa Akademia Techniczna\Pulpit\Moje\Uczelnia\Studia doktoranckie\SEM III\TGIS\Projekt\TGiS\GraphTheory\Datasets\TrainYOLO";
+// string yoloDir = @"C:\Users\BRUT4LxD\OneDrive - Wojskowa Akademia Techniczna\Pulpit\Moje\Uczelnia\Studia doktoranckie\SEM III\TGIS\Projekt\TGiS\GraphTheory\Datasets\TrainYOLO";
 
-await df.ConvertYOLOToVOC(yoloDir);
+// await df.ConvertYOLOToVOC(yoloDir);
 
 //const string path = @"C:\Users\BRUT4LxD\OneDrive - Wojskowa Akademia Techniczna\Pulpit\Moje\Projekty\keras-yolo3\data\train_image_folder\0000a1b2fba255e9.jpg";
 //const string folderPath = @"C:\Users\BRUT4LxD\OneDrive - Wojskowa Akademia Techniczna\Pulpit\Moje\Projekty\keras-yolo3\data\train_image_folder";
